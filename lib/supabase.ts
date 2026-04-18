@@ -1,85 +1,119 @@
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import { env } from './env';
+'use client';
 
-let client: SupabaseClient | null = null;
+import { AuthError } from '@supabase/supabase-js';
+import { env, envValidation, getSupabaseConfigError } from './env';
+import { getSupabaseBrowserClient } from './supabase-browser';
 
-try {
-  // env is validated at build time, so these are guaranteed to be valid strings
-  client = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
-} catch (error) {
-  console.error('Failed to initialize Supabase client:', error);
-  throw new Error(
-    'Supabase configuration error. Ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are set correctly.'
-  );
+function getClientOrError(context: string) {
+  const client = getSupabaseBrowserClient();
+
+  if (!client) {
+    return {
+      client: null,
+      error: new AuthError(getSupabaseConfigError(context)),
+    };
+  }
+
+  return { client, error: null };
 }
 
-export const supabase = client;
+function getRedirectUrl(path: string) {
+  if (typeof window !== 'undefined') {
+    return new URL(path, window.location.origin).toString();
+  }
 
-const missingEnvError = () => ({
-  message: 'Supabase is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.',
-});
+  return new URL(path, env.NEXT_PUBLIC_APP_URL).toString();
+}
+
+export const supabase = getSupabaseBrowserClient();
+
+export const supabaseStatus = {
+  configured: Boolean(supabase),
+  errors: envValidation.errors,
+  usedLegacyAnonKey: envValidation.usedLegacyAnonKey,
+};
 
 export const authApi = {
   async signInWithGoogle() {
-    const { data, error } = await supabase.auth.signInWithOAuth({
+    const { client, error } = getClientOrError('Google sign-in');
+    if (!client) return { data: null, error };
+
+    return client.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${env.NEXT_PUBLIC_APP_URL}/app` },
+      options: { redirectTo: getRedirectUrl('/app') },
     });
-    return { data, error };
   },
 
   async sendPhoneOtp(phone: string) {
-    const { data, error } = await supabase.auth.signInWithOtp({ phone });
-    return { data, error };
+    const { client, error } = getClientOrError('Phone sign-in');
+    if (!client) return { data: null, error };
+
+    return client.auth.signInWithOtp({ phone });
   },
 
   async verifyPhoneOtp(phone: string, token: string) {
-    const { data, error } = await supabase.auth.verifyOtp({
+    const { client, error } = getClientOrError('Phone verification');
+    if (!client) return { data: null, error };
+
+    return client.auth.verifyOtp({
       phone,
       token,
       type: 'sms',
     });
-    return { data, error };
   },
 
   async signUp(email: string, password: string, metadata?: Record<string, unknown>) {
-    const { data, error } = await supabase.auth.signUp({
+    const { client, error } = getClientOrError('Account creation');
+    if (!client) return { data: null, error };
+
+    return client.auth.signUp({
       email,
       password,
       options: { data: metadata },
     });
-    return { data, error };
   },
 
   async signIn(email: string, password: string) {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    return { data, error };
+    const { client, error } = getClientOrError('Email sign-in');
+    if (!client) return { data: null, error };
+
+    return client.auth.signInWithPassword({ email, password });
   },
 
   async signOut() {
-    const { error } = await supabase.auth.signOut();
-    return { error };
+    const { client, error } = getClientOrError('Sign-out');
+    if (!client) return { error };
+
+    return client.auth.signOut();
   },
 
   async getSession() {
-    const { data, error } = await supabase.auth.getSession();
-    return { data, error };
+    const { client, error } = getClientOrError('Session lookup');
+    if (!client) return { data: { session: null }, error };
+
+    return client.auth.getSession();
   },
 
   async getCurrentUser() {
-    const { data, error } = await supabase.auth.getUser();
-    return { data, error };
+    const { client, error } = getClientOrError('User lookup');
+    if (!client) return { data: { user: null }, error };
+
+    return client.auth.getUser();
   },
 
   async resetPassword(email: string) {
-    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${env.NEXT_PUBLIC_APP_URL}/auth/reset-password`,
+    const { client, error } = getClientOrError('Password reset');
+    if (!client) return { data: null, error };
+
+    return client.auth.resetPasswordForEmail(email, {
+      redirectTo: getRedirectUrl('/auth/reset-password'),
     });
-    return { data, error };
   },
 
   async updatePassword(newPassword: string) {
-    const { data, error } = await supabase.auth.updateUser({ password: newPassword });
-    return { data, error };
+    const { client, error } = getClientOrError('Password update');
+    if (!client) return { data: null, error };
+
+    return client.auth.updateUser({ password: newPassword });
   },
 };
