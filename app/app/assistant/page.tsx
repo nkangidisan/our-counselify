@@ -101,7 +101,7 @@ export default function AssistantPage() {
                 <div className="mx-auto mb-4 inline-flex rounded-full bg-primary/10 p-4 text-primary">
                   <Bot className="h-7 w-7" />
                 </div>
-                <h2 className="text-center font-serif text-section leading-[1.1] tracking-[-0.02em] text-text-primary">Good morning, Amina</h2>
+                <h2 className="text-center font-serif text-section leading-[1.1] tracking-[-0.02em] text-text-primary">Good morning, User A</h2>
                 <p className="mx-auto mt-3 max-w-2xl text-center text-sm leading-[1.6] text-text-secondary">
                   Start with a question about a contract, a compliance obligation, or a drafting task.
                 </p>

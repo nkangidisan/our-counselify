@@ -39,8 +39,8 @@ export default function SettingsPage() {
           <div className="grid gap-6 xl:grid-cols-[320px,1fr]">
             <div className="glass-panel rounded-[32px] p-6 text-center">
               <div className="mx-auto h-28 w-28 rounded-full bg-[linear-gradient(135deg,#6366F1,#10B981)]" />
-              <p className="mt-4 text-xl font-semibold text-white">Amina Njeri</p>
-              <p className="mt-1 text-sm text-text-secondary">amina@counselify.africa</p>
+              <p className="mt-4 text-xl font-semibold text-white">User A</p>
+              <p className="mt-1 text-sm text-text-secondary">usera@counselify.africa</p>
               <Button variant="ghost" className="mt-5 w-full">
                 Upload Avatar
               </Button>
@@ -49,10 +49,10 @@ export default function SettingsPage() {
               <h2 className="text-2xl font-semibold text-white">Profile</h2>
               <div className="mt-5 grid gap-4 md:grid-cols-2">
                 <Field label="Full name">
-                  <Input defaultValue="Amina Njeri" />
+                  <Input defaultValue="User A" />
                 </Field>
                 <Field label="Email">
-                  <Input defaultValue="amina@counselify.africa" />
+                  <Input defaultValue="usera@counselify.africa" />
                 </Field>
                 <Field label="Company">
                   <Input defaultValue="LakeHub Growth Co." />

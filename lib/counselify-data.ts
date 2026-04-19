@@ -1287,7 +1287,7 @@ export const docsSections = [
 ];
 
 export const organizationMembers = [
-  { id: 'm1', name: 'Amina Njeri', email: 'amina@counselify.africa', role: 'General Counsel', joined: '2025-10-12' },
+  { id: 'm1', name: 'User A', email: 'usera@counselify.africa', role: 'General Counsel', joined: '2025-10-12' },
   { id: 'm2', name: 'Peter Mugisha', email: 'peter@counselify.africa', role: 'Compliance Lead', joined: '2025-11-02' },
   { id: 'm3', name: 'Neema Kaijage', email: 'neema@counselify.africa', role: 'Finance Controller', joined: '2026-01-08' },
 ];

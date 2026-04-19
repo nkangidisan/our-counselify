@@ -13,10 +13,10 @@ import {
   FileBadge2,
   FileText,
   LayoutDashboard,
+  LogOut,
   Menu,
   Search,
   Settings,
-  Sparkles,
   TrendingUp,
   UserCircle2,
   Wallet,
@@ -25,7 +25,9 @@ import {
 import { Logo } from '@/components/brand/logo';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { appSearchIndex, notifications } from '@/lib/counselify-data';
+import { authApi } from '@/lib/supabase';
 import { Button, Input } from '@/components/ui/primitives';
+import { useRouter } from 'next/navigation';
 
 const primaryNav = [
   { href: '/app', label: 'Dashboard', icon: LayoutDashboard },
@@ -50,6 +52,7 @@ function getPageTitle(pathname: string) {
 }
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const pathname = usePathname() ?? '/app';
   const pageTitle = getPageTitle(pathname);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -115,6 +118,11 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     if (!query) return appSearchIndex;
     return appSearchIndex.filter((item) => `${item.title} ${item.subtitle} ${item.type}`.toLowerCase().includes(query));
   }, [searchValue]);
+
+  async function handleLogout() {
+    await authApi.signOut();
+    router.replace('/');
+  }
 
   return (
     <div className="app-shell min-h-screen bg-bg-base text-text-primary">
@@ -263,8 +271,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                   <ThemeToggle iconOnly />
                   <button type="button" className="interactive-target hidden h-11 items-center gap-2 rounded-full border border-border-default bg-bg-surface px-3 md:inline-flex">
                     <UserCircle2 className="h-5 w-5" />
-                    <span className="text-sm font-medium">Amina</span>
+                    <span className="text-sm font-medium">User A</span>
                   </button>
+                  <Button variant="ghost" size="sm" className="hidden md:inline-flex" onClick={() => void handleLogout()}>
+                    <LogOut className="h-4 w-4" />
+                    Logout
+                  </Button>
                 </>
               )}
             </div>
@@ -322,6 +334,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                   </Link>
                 );
               })}
+              <button
+                type="button"
+                onClick={() => void handleLogout()}
+                className="flex min-h-[52px] items-center gap-3 rounded-2xl border border-border-default bg-bg-elevated px-4 text-left"
+              >
+                <LogOut className="h-5 w-5 text-text-secondary" />
+                <span className="text-sm font-medium text-text-primary">Logout</span>
+              </button>
             </div>
           </div>
         </div>

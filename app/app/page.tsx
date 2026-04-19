@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { ArrowLeft, BellRing, Clock3, Construction, MailCheck } from 'lucide-react';
 import { AppLayout } from '@/components/layout/app-layout';
-import { useAuth } from '@/context/AuthProvider';
 import { Button, Card } from '@/components/ui/primitives';
 
 const launchSteps = [
@@ -25,9 +24,6 @@ const launchSteps = [
 ] as const;
 
 export default function DashboardPage() {
-  const { session } = useAuth();
-  const email = session?.user?.email;
-
   return (
     <AppLayout>
       <div className="mx-auto max-w-5xl space-y-6">
@@ -44,11 +40,6 @@ export default function DashboardPage() {
               <p className="mt-4 max-w-xl text-base leading-[1.7] text-text-secondary sm:text-lg">
                 We are putting the finishing touches on the official dashboard experience. We will notify you via email once it is ready to launch.
               </p>
-              {email ? (
-                <div className="mt-5 inline-flex rounded-2xl border border-border-default bg-bg-surface/85 px-4 py-3 text-sm text-text-secondary">
-                  Official launch updates will be sent to <span className="ml-1 font-semibold text-text-primary">{email}</span>.
-                </div>
-              ) : null}
               <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                 <Link href="/" className="w-full sm:w-auto">
                   <Button variant="primary" size="lg" className="w-full sm:w-auto">
