@@ -9,7 +9,7 @@ import { z } from 'zod';
 import { ArrowRight, CheckCircle2, Eye, EyeOff, Phone } from 'lucide-react';
 import { Logo } from '@/components/brand/logo';
 import { Button, Input, Select } from '@/components/ui/primitives';
-import { authApi } from '@/lib/supabase';
+import { authApi, supabase } from '@/lib/supabase';
 import { redirectAfterAuth } from '@/lib/authRedirect';
 import { eastAfricanCountries, industryCards } from '@/lib/counselify-data';
 
@@ -83,7 +83,19 @@ export function AuthScreen({ defaultMode = 'signin' }: { defaultMode?: Mode }) {
         if (error) {
           setStatus({ type: 'error', message: error.message });
         } else if (data.user) {
-          await redirectAfterAuth(data.user.id, router);
+          if (supabase) {
+            await supabase.from('profiles').upsert(
+              {
+                id: data.user.id,
+                email: data.user.email ?? values.email,
+                full_name: values.fullName,
+                onboarding_completed: false,
+              },
+              { onConflict: 'id' }
+            );
+          }
+
+          router.replace('/onboarding');
         } else {
           setStatus({ type: 'success', message: 'Account created. Check your email to finish signing in.' });
         }
@@ -147,13 +159,13 @@ export function AuthScreen({ defaultMode = 'signin' }: { defaultMode?: Mode }) {
 
   return (
     <div className="min-h-screen bg-bg-base">
-      <div className="mx-auto flex min-h-screen max-w-[520px] flex-col px-4 py-6 md:max-w-none md:items-center md:justify-center md:px-6">
-        <div className="flex w-full flex-1 flex-col md:max-w-[440px] md:rounded-[32px] md:border md:border-border-default md:bg-bg-surface md:p-8 md:shadow-md">
+      <div className="mx-auto flex min-h-screen max-w-[520px] flex-col px-4 py-4 sm:px-5 sm:py-6 md:max-w-none md:items-center md:justify-center md:px-6">
+        <div className="flex w-full flex-1 flex-col rounded-[28px] border border-border-default bg-bg-surface px-4 py-5 shadow-sm sm:px-5 sm:py-6 md:max-w-[440px] md:rounded-[32px] md:p-8 md:shadow-md">
           <div className="flex justify-center">
             <Logo href="/" />
           </div>
 
-          <div className="mt-8 flex rounded-full border border-border-default bg-bg-surface p-1 md:bg-bg-elevated">
+          <div className="mt-6 flex rounded-full border border-border-default bg-bg-elevated p-1 md:mt-8">
             {[
               ['signin', 'Sign In'],
               ['signup', 'Create Account'],
@@ -188,12 +200,12 @@ export function AuthScreen({ defaultMode = 'signin' }: { defaultMode?: Mode }) {
             </div>
           ) : null}
 
-          <div className="mt-6 space-y-3">
-            <Button variant="ghost" className="w-full justify-center bg-bg-surface md:bg-bg-elevated" onClick={handleGoogle} loading={loading}>
+          <div className="mt-5 space-y-3 sm:mt-6">
+            <Button variant="ghost" className="w-full justify-center bg-bg-elevated" onClick={handleGoogle} loading={loading}>
               Continue with Google
             </Button>
 
-            <div className="rounded-3xl border border-border-default bg-bg-surface p-4 md:bg-bg-elevated">
+            <div className="rounded-3xl border border-border-default bg-bg-elevated p-4">
               <button type="button" className="flex w-full items-center justify-between text-left text-sm font-semibold text-text-primary" onClick={() => setPhoneExpanded((current) => !current)}>
                 <span className="inline-flex items-center gap-2">
                   <Phone className="h-4 w-4" />
@@ -220,7 +232,7 @@ export function AuthScreen({ defaultMode = 'signin' }: { defaultMode?: Mode }) {
                     </Button>
                   ) : (
                     <>
-                      <div className="grid grid-cols-6 gap-2">
+                      <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
                         {otp.map((digit, index) => (
                           <Input
                             key={index}
@@ -249,7 +261,7 @@ export function AuthScreen({ defaultMode = 'signin' }: { defaultMode?: Mode }) {
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-border-default" />
             </div>
-            <div className="relative mx-auto w-fit bg-bg-base px-3 text-sm text-text-muted md:bg-bg-surface">or continue with email</div>
+            <div className="relative mx-auto w-fit bg-bg-surface px-3 text-sm text-text-muted">or continue with email</div>
           </div>
 
           <form onSubmit={submit} className="space-y-4">
@@ -277,7 +289,7 @@ export function AuthScreen({ defaultMode = 'signin' }: { defaultMode?: Mode }) {
             </Field>
           </form>
 
-          <div className="safe-bottom-padding sticky bottom-0 mt-8 bg-bg-base pt-4 md:bg-transparent">
+          <div className="safe-bottom-padding sticky bottom-0 mt-6 bg-bg-surface pt-4 md:mt-8 md:bg-transparent">
             <Button type="submit" variant="primary" className="w-full" loading={loading} onClick={() => void submit()}>
               {mode === 'signin' ? 'Sign In' : 'Create Account'}
               {!loading ? <ArrowRight className="h-4 w-4" /> : null}
@@ -302,7 +314,7 @@ export function AuthScreen({ defaultMode = 'signin' }: { defaultMode?: Mode }) {
           </div>
 
           {mode === 'signup' ? (
-            <div className="mt-6 rounded-3xl border border-border-default bg-bg-surface p-4 md:bg-bg-elevated">
+            <div className="mt-6 rounded-3xl border border-border-default bg-bg-elevated p-4">
               <p className="text-sm font-semibold text-text-primary">Workspace onboarding starts immediately after signup</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {industryCards.slice(0, 6).map((industry) => (

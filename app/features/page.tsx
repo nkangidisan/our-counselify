@@ -8,23 +8,23 @@ export default function FeaturesPage() {
   return (
     <PublicLayout>
       <section className="grain-overlay hero-surface border-b border-border-default">
-        <div className="mx-auto max-w-[980px] px-4 py-20 text-center sm:px-6 lg:px-8">
-          <p className="text-sm uppercase tracking-[0.28em] text-primary">Features</p>
-          <h1 className="mt-4 font-serif text-6xl text-text-primary">Every Feature, Built for Legal Excellence</h1>
+        <div className="mx-auto max-w-[980px] px-4 py-12 text-center sm:px-6 md:py-16 lg:px-8 lg:py-20">
+          <p className="text-xs uppercase tracking-[0.2em] text-primary sm:text-sm sm:tracking-[0.28em]">Features</p>
+          <h1 className="mt-4 font-serif text-[2.7rem] leading-[1.02] text-text-primary sm:text-5xl lg:text-6xl">Every Feature, Built for Legal Excellence</h1>
           <p className="mx-auto mt-5 max-w-3xl text-lg text-text-secondary">
             From contract analysis to regulatory forecasting — the complete AI legal operating system.
           </p>
         </div>
       </section>
 
-      <section className="mx-auto max-w-[1280px] px-4 py-16 sm:px-6 lg:px-8">
+      <section className="mx-auto max-w-[1280px] px-4 py-10 sm:px-6 sm:py-12 lg:px-8 lg:py-16">
         <div className="space-y-10">
           {featureSections.map((section, index) => (
-            <section key={section.id} id={section.id} className="scroll-mt-24 rounded-[12px] border border-border-default bg-bg-surface p-6 lg:p-8">
+            <section key={section.id} id={section.id} className="scroll-mt-24 rounded-[24px] border border-border-default bg-bg-surface p-4 sm:p-6 lg:p-8">
               <div className="grid gap-8 lg:grid-cols-[1.15fr,0.85fr]">
                 <div>
-                  <p className="text-sm uppercase tracking-[0.28em] text-primary">{section.eyebrow}</p>
-                  <h2 className="mt-4 font-serif text-5xl text-text-primary">{section.title}</h2>
+                  <p className="text-xs uppercase tracking-[0.18em] text-primary sm:text-sm sm:tracking-[0.28em]">{section.eyebrow}</p>
+                  <h2 className="mt-4 font-serif text-[2rem] leading-[1.05] text-text-primary sm:text-4xl lg:text-5xl">{section.title}</h2>
                   <div className="mt-6 space-y-4">
                     {section.paragraphs.map((paragraph) => (
                       <p key={paragraph} className="text-base text-text-secondary">
@@ -42,8 +42,8 @@ export default function FeaturesPage() {
                   </div>
                 </div>
 
-                <div className="surface-card p-5">
-                  <p className="text-sm uppercase tracking-[0.24em] text-text-muted">Interface preview {String(index + 1).padStart(2, '0')}</p>
+                <div className="surface-card p-4 sm:p-5">
+                  <p className="text-xs uppercase tracking-[0.18em] text-text-muted sm:text-sm sm:tracking-[0.24em]">Interface preview {String(index + 1).padStart(2, '0')}</p>
                   {'score' in section.visual && (
                     <div className="mt-4">
                       <h3 className="text-xl font-semibold text-text-primary">{section.visual.title}</h3>

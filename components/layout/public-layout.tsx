@@ -198,7 +198,7 @@ export function PublicLayout({ children, cta = true }: { children: React.ReactNo
 
       <main className="page-enter">{children}</main>
 
-      <footer className="mt-16 border-t border-border-default bg-bg-surface">
+      <footer className="mt-12 border-t border-border-default bg-bg-surface md:mt-16">
         <div className="mx-auto grid max-w-[1280px] gap-8 px-4 py-12 md:grid-cols-2 md:px-6 xl:grid-cols-4 xl:px-8">
           <div className="space-y-4">
             <Logo muted />

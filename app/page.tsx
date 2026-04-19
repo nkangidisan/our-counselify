@@ -12,13 +12,13 @@ export default function HomePage() {
   return (
     <PublicLayout>
       <section className="hero-surface border-b border-border-default">
-        <div className="mx-auto grid max-w-[1280px] gap-10 px-4 py-10 md:px-6 md:py-16 lg:grid-cols-[55%,45%] lg:items-center xl:px-8">
+        <div className="mx-auto grid max-w-[1280px] gap-8 px-4 py-8 sm:gap-10 sm:py-10 md:px-6 md:py-16 lg:grid-cols-[55%,45%] lg:items-center xl:px-8">
           <div>
             <p className="text-xs uppercase tracking-[0.08em] text-primary">Continuous compliance for East Africa</p>
-            <h1 className="mt-4 max-w-[12ch] font-serif text-hero leading-[1.1] tracking-[-0.02em] text-text-primary">
+            <h1 className="mt-4 max-w-[13ch] font-serif text-[2.65rem] leading-[0.98] tracking-[-0.03em] text-text-primary sm:text-[3.5rem] md:text-hero">
               AI legal infrastructure for modern businesses.
             </h1>
-            <p className="mt-4 max-w-[34rem] text-body leading-[1.6] text-text-secondary">
+            <p className="mt-4 max-w-[34rem] text-base leading-[1.65] text-text-secondary sm:text-body">
               Continuous compliance monitoring, intelligent contract analysis, and regulatory forecasting built for fast-moving legal teams.
             </p>
             <div className="mt-6">
@@ -72,7 +72,7 @@ export default function HomePage() {
               </div>
 
               <div className="rounded-3xl border border-border-default bg-bg-elevated p-4">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <p className="text-sm text-text-secondary">Next actions</p>
                   <span className="rounded-full border border-border-gold bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em] text-primary">
                     Legal Ops
@@ -83,7 +83,7 @@ export default function HomePage() {
                     ['Issue data transfer annex', 'Today'],
                     ['Review renewal package', 'Tomorrow'],
                   ].map(([label, due]) => (
-                    <div key={label} className="flex min-h-[52px] items-center justify-between rounded-2xl border border-border-default bg-bg-surface px-4">
+                    <div key={label} className="flex min-h-[52px] flex-col items-start justify-center gap-1 rounded-2xl border border-border-default bg-bg-surface px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:py-0">
                       <span className="text-sm font-medium text-text-primary">{label}</span>
                       <span className="text-xs text-text-muted">{due}</span>
                     </div>
@@ -98,7 +98,7 @@ export default function HomePage() {
       <section className="border-y border-border-default bg-bg-surface">
         <div className="mx-auto grid max-w-[1280px] gap-4 px-4 py-8 md:grid-cols-3 md:px-6 xl:px-8">
           {pillars.map((pillar) => (
-            <Card key={pillar.number} className="text-center md:text-left">
+            <Card key={pillar.number} className="text-left">
               <p className="font-serif text-[40px] leading-[1.1] text-primary">{pillar.number}</p>
               <h2 className="mt-3 text-card font-semibold text-text-primary">{pillar.title}</h2>
               <p className="mt-3 text-sm leading-[1.6] text-text-secondary">{pillar.description}</p>
@@ -107,7 +107,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-[1280px] px-4 py-12 md:px-6 lg:py-16 xl:px-8">
+      <section className="mx-auto max-w-[1280px] px-4 py-10 md:px-6 lg:py-16 xl:px-8">
         <div className="max-w-2xl">
           <p className="text-xs uppercase tracking-[0.08em] text-primary">Platform capabilities</p>
           <h2 className="mt-3 font-serif text-section leading-[1.1] tracking-[-0.02em] text-text-primary">Everything your legal team needs</h2>
@@ -132,7 +132,7 @@ export default function HomePage() {
       </section>
 
       <section className="border-y border-border-default bg-bg-surface">
-        <div className="mx-auto max-w-[1280px] px-4 py-12 md:px-6 lg:py-16 xl:px-8">
+        <div className="mx-auto max-w-[1280px] px-4 py-10 md:px-6 lg:py-16 xl:px-8">
           <div className="max-w-2xl">
             <p className="text-xs uppercase tracking-[0.08em] text-primary">Industry coverage</p>
             <h2 className="mt-3 font-serif text-section leading-[1.1] tracking-[-0.02em] text-text-primary">Built for every industry in East Africa</h2>
@@ -151,7 +151,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-[1280px] px-4 py-12 md:px-6 lg:py-16 xl:px-8">
+      <section className="mx-auto max-w-[1280px] px-4 py-10 md:px-6 lg:py-16 xl:px-8">
         <div className="max-w-2xl">
           <p className="text-xs uppercase tracking-[0.08em] text-primary">How it works</p>
           <h2 className="mt-3 font-serif text-section leading-[1.1] tracking-[-0.02em] text-text-primary">Upload. AI analyzes. Act.</h2>
@@ -184,7 +184,7 @@ export default function HomePage() {
       </section>
 
       <section className="border-y border-border-default bg-bg-surface">
-        <div className="mx-auto max-w-[1280px] px-4 py-12 md:px-6 lg:py-16 xl:px-8">
+        <div className="mx-auto max-w-[1280px] px-4 py-10 md:px-6 lg:py-16 xl:px-8">
           <div className="max-w-2xl">
             <p className="text-xs uppercase tracking-[0.08em] text-primary">Pricing</p>
             <h2 className="mt-3 font-serif text-section leading-[1.1] tracking-[-0.02em] text-text-primary">Start free, then scale with confidence.</h2>
@@ -220,9 +220,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-[1280px] px-4 py-12 md:px-6 lg:py-16 xl:px-8">
+      <section className="mx-auto max-w-[1280px] px-4 py-10 md:px-6 lg:py-16 xl:px-8">
         <Card className="text-center">
-          <h2 className="font-serif text-section leading-[1.1] tracking-[-0.02em] text-text-primary">Ready to transform legal operations?</h2>
+          <h2 className="font-serif text-[2rem] leading-[1.05] tracking-[-0.02em] text-text-primary sm:text-section">Ready to transform legal operations?</h2>
           <p className="mx-auto mt-4 max-w-2xl text-body leading-[1.6] text-text-secondary">
             Built to help East African legal teams move faster without lowering rigor.
           </p>

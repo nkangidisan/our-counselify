@@ -70,8 +70,8 @@ export default function OnboardingPage() {
 
   return (
     <div className="min-h-screen bg-bg-base">
-      <div className="mx-auto min-h-screen max-w-[960px] bg-bg-base px-4 py-6 md:flex md:items-center md:justify-center md:px-6">
-        <div className="flex min-h-[calc(100vh-3rem)] flex-col rounded-none md:min-h-[720px] md:w-full md:rounded-[32px] md:border md:border-border-default md:bg-bg-surface md:p-8 md:shadow-md">
+      <div className="mx-auto min-h-screen max-w-[960px] bg-bg-base px-4 py-4 sm:py-6 md:flex md:items-center md:justify-center md:px-6">
+        <div className="flex min-h-[calc(100vh-2rem)] flex-col rounded-[28px] border border-border-default bg-bg-surface p-4 shadow-sm sm:p-5 md:min-h-[720px] md:w-full md:rounded-[32px] md:p-8 md:shadow-md">
           <div className="flex items-center justify-between">
             <button
               type="button"
@@ -84,13 +84,13 @@ export default function OnboardingPage() {
             <div className="w-11" />
           </div>
 
-          <div className="mt-6 flex items-center justify-center gap-2">
+          <div className="mt-5 flex items-center justify-center gap-2 sm:mt-6">
             {steps.map((item, index) => (
-              <div key={item.key} className={`h-2 w-10 rounded-full ${index <= step ? 'bg-primary' : 'bg-border-default'}`} />
+              <div key={item.key} className={`h-2 w-8 rounded-full sm:w-10 ${index <= step ? 'bg-primary' : 'bg-border-default'}`} />
             ))}
           </div>
 
-          <div className="mt-8 flex-1">
+          <div className="mt-6 flex-1 sm:mt-8">
             <div className="mx-auto max-w-[640px]">
               <div className="inline-flex rounded-2xl bg-primary/10 p-3 text-primary">
                 <Icon className="h-6 w-6" />
@@ -98,7 +98,7 @@ export default function OnboardingPage() {
               <p className="mt-4 text-xs uppercase tracking-[0.08em] text-text-muted">
                 Step {step + 1} of {steps.length}
               </p>
-              <h1 className="mt-3 font-serif text-section leading-[1.1] tracking-[-0.02em] text-text-primary">{steps[step].title}</h1>
+              <h1 className="mt-3 font-serif text-[2rem] leading-[1.05] tracking-[-0.02em] text-text-primary sm:text-section">{steps[step].title}</h1>
 
               {step === 0 ? (
                 <div className="mt-8 grid gap-4">
@@ -156,7 +156,7 @@ export default function OnboardingPage() {
                 <div className="mt-8 space-y-4">
                   <label
                     htmlFor="contract-upload"
-                    className="flex min-h-[280px] cursor-pointer flex-col items-center justify-center rounded-[28px] border border-dashed border-border-gold bg-primary/10 p-6 text-center"
+                    className="flex min-h-[240px] cursor-pointer flex-col items-center justify-center rounded-[28px] border border-dashed border-border-gold bg-primary/10 p-5 text-center sm:min-h-[280px] sm:p-6"
                   >
                     <FileUp className="mb-4 h-10 w-10 text-primary" />
                     <h2 className="text-card font-semibold text-text-primary">Upload your first contract</h2>
@@ -195,7 +195,7 @@ export default function OnboardingPage() {
             </div>
           </div>
 
-          <div className="safe-bottom-padding sticky bottom-0 mt-8 bg-bg-base pt-4 md:bg-transparent">
+          <div className="safe-bottom-padding sticky bottom-0 mt-6 bg-bg-surface pt-4 md:mt-8 md:bg-transparent">
             <div className="mx-auto max-w-[640px]">
               <Button
                 variant="primary"
