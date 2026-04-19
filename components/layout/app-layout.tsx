@@ -1,14 +1,14 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { AnimatePresence, motion } from 'framer-motion';
 import {
   Bell,
   Bot,
   CheckSquare,
-  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Compass,
   FileBadge2,
   FileText,
@@ -18,35 +18,57 @@ import {
   Settings,
   Sparkles,
   TrendingUp,
+  UserCircle2,
+  Wallet,
   X,
 } from 'lucide-react';
 import { Logo } from '@/components/brand/logo';
+import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { appSearchIndex, notifications } from '@/lib/counselify-data';
-import { Button } from '@/components/ui/primitives';
+import { Button, Input } from '@/components/ui/primitives';
 
-const appNav = [
+const primaryNav = [
   { href: '/app', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/app/contracts', label: 'Contracts', icon: FileText },
-  { href: '/app/assistant', label: 'AI Assistant', icon: Bot },
+  { href: '/app/assistant', label: 'AI', icon: Bot },
   { href: '/app/compliance', label: 'Compliance', icon: CheckSquare },
+];
+
+const secondaryNav = [
   { href: '/app/forecaster', label: 'Forecaster', icon: TrendingUp },
   { href: '/app/documents', label: 'Documents', icon: FileBadge2 },
   { href: '/app/reports', label: 'Reports', icon: Compass },
   { href: '/app/settings', label: 'Settings', icon: Settings },
+  { href: '/pricing', label: 'Billing', icon: Wallet },
 ];
 
-const mobileNav = appNav.slice(0, 5);
+const fullNav = [...primaryNav, ...secondaryNav];
+
+function getPageTitle(pathname: string) {
+  const item = fullNav.find((entry) => pathname === entry.href || (entry.href !== '/app' && pathname.startsWith(entry.href)));
+  return item?.label ?? 'Workspace';
+}
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const safePathname = pathname ?? '/app';
+  const pathname = usePathname() ?? '/app';
+  const pageTitle = getPageTitle(pathname);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchValue, setSearchValue] = useState('');
+  const [moreOpen, setMoreOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+  const touchStartX = useRef<number | null>(null);
+  const sheetStartY = useRef<number | null>(null);
 
   useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
+    setSidebarOpen(false);
+    setMoreOpen(false);
+    setNotificationsOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault();
         setSearchOpen(true);
@@ -55,303 +77,268 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       if (event.key === 'Escape') {
         setSearchOpen(false);
         setNotificationsOpen(false);
+        setMoreOpen(false);
       }
     };
 
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, []);
+    const handleTouchStart = (event: TouchEvent) => {
+      touchStartX.current = event.changedTouches[0]?.clientX ?? null;
+    };
 
-  useEffect(() => {
-    setSidebarOpen(false);
-  }, [pathname]);
+    const handleTouchEnd = (event: TouchEvent) => {
+      const startX = touchStartX.current;
+      const endX = event.changedTouches[0]?.clientX ?? null;
 
-  const results = useMemo(() => {
-    if (!searchTerm.trim()) return appSearchIndex;
-    const query = searchTerm.toLowerCase();
-    return appSearchIndex.filter(
-      (item) =>
-        item.title.toLowerCase().includes(query) ||
-        item.subtitle.toLowerCase().includes(query) ||
-        item.type.toLowerCase().includes(query),
-    );
-  }, [searchTerm]);
+      if (startX === null || endX === null) return;
 
-  const groupedResults = useMemo(
-    () =>
-      results.reduce<Record<string, typeof results>>((accumulator, item) => {
-        accumulator[item.type] = [...(accumulator[item.type] ?? []), item];
-        return accumulator;
-      }, {}),
-    [results],
-  );
+      if (!sidebarOpen && startX < 24 && endX - startX > 70) {
+        setSidebarOpen(true);
+      }
+
+      if (sidebarOpen && startX - endX > 70) {
+        setSidebarOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd, { passive: true });
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [sidebarOpen]);
+
+  const searchResults = useMemo(() => {
+    const query = searchValue.trim().toLowerCase();
+    if (!query) return appSearchIndex;
+    return appSearchIndex.filter((item) => `${item.title} ${item.subtitle} ${item.type}`.toLowerCase().includes(query));
+  }, [searchValue]);
 
   return (
-    <div className="min-h-screen bg-bg-base text-text-primary">
-      <AnimatePresence>
-        {sidebarOpen && (
-          <motion.button
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-40 bg-slate-950/70 backdrop-blur-sm lg:hidden"
-            onClick={() => setSidebarOpen(false)}
-            aria-label="Close sidebar overlay"
-          />
-        )}
-      </AnimatePresence>
+    <div className="app-shell min-h-screen bg-bg-base text-text-primary">
+      <div className="md:flex">
+        <button
+          type="button"
+          aria-label="Close sidebar overlay"
+          onClick={() => setSidebarOpen(false)}
+          className={`fixed inset-0 z-40 bg-black/30 md:hidden ${sidebarOpen ? 'block' : 'hidden'}`}
+        />
 
-      <aside
-        className={`fixed inset-y-0 left-0 z-50 w-60 border-r border-border-default bg-bg-base transition-transform duration-200 lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
-      >
-        <div className="flex h-full flex-col">
-          <div className="flex items-center justify-between border-b border-white/10 px-5 py-5">
-            <Logo href="/" compact />
-            <button className="rounded-xl border border-white/10 p-2 text-text-secondary lg:hidden" onClick={() => setSidebarOpen(false)}>
-              <X className="h-4 w-4" />
-            </button>
-          </div>
+        <aside
+          className={`fixed inset-y-0 left-0 z-50 flex w-[240px] flex-col border-r border-border-default bg-bg-surface shadow-md transition-transform md:translate-x-0 ${
+            sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          } ${collapsed ? 'md:w-16 lg:w-[240px]' : ''}`}
+        >
+          <div className="flex h-16 items-center justify-between border-b border-border-default px-4">
+              <Logo compact={collapsed} />
+              <button
+                type="button"
+                onClick={() => {
+                  if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+                    setCollapsed((current) => !current);
+                    return;
+                  }
+                  setSidebarOpen(false);
+                }}
+                className="interactive-target inline-flex h-10 w-10 items-center justify-center rounded-full border border-border-default bg-bg-elevated text-text-secondary"
+              >
+                <X className="h-4 w-4 md:hidden" />
+                <ChevronRight className={`hidden h-4 w-4 md:block ${collapsed ? 'block' : 'hidden'}`} />
+                <ChevronLeft className={`hidden h-4 w-4 md:block ${collapsed ? 'hidden' : 'block'}`} />
+              </button>
+            </div>
 
-          <div className="px-4 py-5">
-            <div className="surface-card rounded-2xl p-4">
-              <p className="text-xs uppercase tracking-[0.24em] text-text-muted">Workspace</p>
-              <div className="mt-3 flex items-center justify-between rounded-2xl border border-border-default bg-bg-elevated px-3 py-3">
-                <div>
-                  <p className="text-sm font-medium text-text-primary">LakeHub Growth Co.</p>
+          <div className="px-3 py-4">
+            <div className="rounded-3xl border border-border-default bg-bg-elevated p-4">
+              <p className={`text-xs uppercase tracking-[0.08em] text-text-muted ${collapsed ? 'md:hidden lg:block' : ''}`}>Workspace</p>
+              <div className="mt-3 flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-primary/15" />
+                <div className={`${collapsed ? 'hidden md:hidden lg:block' : ''}`}>
+                  <p className="text-sm font-semibold text-text-primary">LakeHub Growth Co.</p>
                   <p className="text-xs text-text-secondary">Kenya, Uganda, Tanzania</p>
                 </div>
-                <ChevronDown className="h-4 w-4 text-text-secondary" />
               </div>
             </div>
           </div>
 
-          <nav className="flex-1 space-y-1 px-3">
-            {appNav.map((item, index) => {
-              const active = safePathname === item.href || (item.href !== '/app' && safePathname.startsWith(item.href));
+          <nav className="flex-1 space-y-1 px-2">
+            {fullNav.map((item) => {
+              const active = pathname === item.href || (item.href !== '/app' && pathname.startsWith(item.href));
               const Icon = item.icon;
               return (
-                <motion.div
+                <Link
                   key={item.href}
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.04 }}
+                  href={item.href}
+                  title={collapsed ? item.label : undefined}
+                  className={`flex min-h-[52px] items-center gap-3 rounded-2xl border px-3 ${
+                    active
+                      ? 'border-border-gold bg-primary/10 text-primary'
+                      : 'border-transparent text-text-secondary hover:border-border-default hover:bg-bg-hover hover:text-text-primary'
+                  }`}
                 >
-                  <Link
-                    href={item.href}
-                    className={`group flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm transition ${
-                      active
-                        ? 'border-border-glow bg-primary/10 text-white shadow-[inset_3px_0_0_0_#D4A855,0_12px_30px_rgba(212,168,85,0.12)]'
-                        : 'border-transparent text-text-secondary hover:border-border-default hover:bg-bg-surface hover:text-text-primary'
-                    }`}
-                  >
-                    <Icon className={`h-4 w-4 ${active ? 'text-primary' : 'text-text-muted group-hover:text-primary'}`} />
-                    <span>{item.label}</span>
-                  </Link>
-                </motion.div>
+                  <Icon className="h-5 w-5 shrink-0" />
+                  <span className={`${collapsed ? 'md:hidden lg:block' : ''}`}>{item.label}</span>
+                </Link>
               );
             })}
           </nav>
 
-          <div className="border-t border-white/10 p-4">
-            <div className="surface-card rounded-3xl p-4">
-              <div className="flex items-center gap-3">
-                <div className="rounded-2xl bg-primary/20 p-2 text-primary">
-                  <Sparkles className="h-4 w-4" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-text-primary">Professional plan</p>
-                  <p className="text-xs text-text-secondary">Streaming AI and regional monitoring enabled</p>
-                </div>
+          <div className="border-t border-border-default p-3">
+            <div className="flex items-center justify-between rounded-3xl border border-border-default bg-bg-elevated px-4 py-3">
+              <div className={`${collapsed ? 'hidden md:hidden lg:block' : ''}`}>
+                <p className="text-sm font-semibold text-text-primary">Professional plan</p>
+                <p className="text-xs text-text-secondary">Streaming AI enabled</p>
               </div>
+              <ThemeToggle iconOnly />
             </div>
           </div>
-        </div>
-      </aside>
+        </aside>
 
-      <div className="lg:pl-60">
-        <header className="sticky top-0 z-30 border-b border-border-default bg-bg-base/90 backdrop-blur-2xl">
-          <div className="mx-auto flex h-16 max-w-[1280px] items-center gap-4 px-4 sm:px-6 lg:px-8">
-            <button className="rounded-2xl border border-border-default p-2 text-text-secondary lg:hidden" onClick={() => setSidebarOpen(true)}>
-              <Menu className="h-4 w-4" />
-            </button>
-
-            <button
-              onClick={() => setSearchOpen(true)}
-              className="group hidden flex-1 items-center gap-3 rounded-2xl border border-border-default bg-bg-surface px-4 py-3 text-left shadow-[0_18px_50px_rgba(8,11,20,0.25)] transition hover:border-border-glow md:flex"
-            >
-              <Search className="h-4 w-4 text-text-muted group-hover:text-primary" />
-              <span className="flex-1 text-sm text-text-secondary">Search contracts, documents, deadlines, and chats</span>
-              <span className="rounded-lg border border-border-default bg-bg-base px-2 py-1 text-xs text-text-muted">cmd K</span>
-            </button>
-
-            <div className="ml-auto flex items-center gap-3">
-              <button
-                className="rounded-2xl border border-border-default bg-bg-surface p-2 text-text-secondary transition hover:border-border-glow hover:text-text-primary"
-                onClick={() => setSearchOpen(true)}
-              >
-                <Search className="h-4 w-4 md:hidden" />
-                <Search className="hidden h-4 w-4 md:block" />
-              </button>
-
-              <div className="relative">
-                <button
-                  className="rounded-2xl border border-border-default bg-bg-surface p-2 text-text-secondary transition hover:border-border-glow hover:text-text-primary"
-                  onClick={() => setNotificationsOpen((current) => !current)}
-                >
-                  <Bell className="h-4 w-4" />
-                </button>
-                <span className="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-accent-coral px-1 text-[10px] font-semibold text-white">
-                  5
-                </span>
-
-                <AnimatePresence>
-                  {notificationsOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 8 }}
-                      className="absolute right-0 top-12 w-[360px] max-w-[calc(100vw-2rem)] rounded-3xl border border-border-default bg-bg-surface/95 p-4 shadow-[0_24px_80px_rgba(0,0,0,0.4)] backdrop-blur-2xl"
+        <div className={`min-w-0 flex-1 ${collapsed ? 'md:pl-16 lg:pl-[240px]' : 'md:pl-[240px]'}`}>
+          <header className="sticky top-0 z-30 border-b border-border-default bg-bg-surface/95 backdrop-blur-xl">
+            <div className="mx-auto flex min-h-16 max-w-[1280px] items-center gap-3 px-4 md:px-6 xl:px-8">
+              {searchOpen ? (
+                <div className="flex w-full items-center gap-3">
+                  <Input
+                    autoFocus
+                    value={searchValue}
+                    onChange={(event) => setSearchValue(event.target.value)}
+                    placeholder="Search contracts, deadlines, and documents"
+                    className="flex-1"
+                  />
+                  <Button variant="ghost" size="sm" onClick={() => setSearchOpen(false)}>
+                    Cancel
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setSidebarOpen(true)}
+                    className="interactive-target inline-flex h-11 w-11 items-center justify-center rounded-full border border-border-default bg-bg-surface md:hidden"
+                  >
+                    <Menu className="h-5 w-5" />
+                  </button>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-lg font-semibold text-text-primary">{pageTitle}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSearchOpen(true)}
+                    className="interactive-target inline-flex h-11 w-11 items-center justify-center rounded-full border border-border-default bg-bg-surface"
+                  >
+                    <Search className="h-5 w-5" />
+                  </button>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setNotificationsOpen((current) => !current)}
+                      className="interactive-target inline-flex h-11 w-11 items-center justify-center rounded-full border border-border-default bg-bg-surface"
                     >
-                      <NotificationGroup title="Risk Alerts" items={notifications.riskAlerts} />
-                      <NotificationGroup title="Deadline Reminders" items={notifications.deadlineReminders} />
-                      <NotificationGroup title="System Updates" items={notifications.systemUpdates} />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              <div className="hidden items-center gap-3 rounded-2xl border border-border-default bg-bg-surface px-3 py-2 sm:flex">
-                <div className="h-9 w-9 rounded-2xl bg-[linear-gradient(135deg,#D4A855,#CA8A04)]" />
-                <div>
-                  <p className="text-sm font-medium text-text-primary">Amina Njeri</p>
-                  <p className="text-xs text-text-secondary">General Counsel</p>
-                </div>
-              </div>
+                      <Bell className="h-5 w-5" />
+                    </button>
+                    <span className="absolute right-0 top-0 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-accent-red px-1 text-[10px] font-semibold text-white">
+                      5
+                    </span>
+                    {notificationsOpen ? (
+                      <div className="absolute right-0 top-14 w-[min(360px,calc(100vw-2rem))] rounded-3xl border border-border-default bg-bg-surface p-4 shadow-md">
+                        {Object.entries(notifications).map(([group, items]) => (
+                          <div key={group} className="mb-4 last:mb-0">
+                            <p className="mb-2 text-xs uppercase tracking-[0.08em] text-text-muted">{group}</p>
+                            <div className="space-y-2">
+                              {items.slice(0, 2).map((item) => (
+                                <div key={item.id} className="rounded-2xl border border-border-default bg-bg-elevated p-3">
+                                  <p className="text-sm font-semibold text-text-primary">{item.title}</p>
+                                  <p className="mt-1 text-sm text-text-secondary">{item.detail}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                  <ThemeToggle iconOnly />
+                  <button type="button" className="interactive-target hidden h-11 items-center gap-2 rounded-full border border-border-default bg-bg-surface px-3 md:inline-flex">
+                    <UserCircle2 className="h-5 w-5" />
+                    <span className="text-sm font-medium">Amina</span>
+                  </button>
+                </>
+              )}
             </div>
-          </div>
-        </header>
+          </header>
 
-        <motion.main
-          key={safePathname}
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.15, ease: 'easeOut' }}
-          className="mx-auto max-w-[1280px] px-4 pb-28 pt-8 sm:px-6 lg:px-8 lg:pb-10"
-        >
-          {children}
-        </motion.main>
+          <main className="mx-auto max-w-[1280px] px-4 pb-8 pt-6 md:px-6 xl:px-8">{children}</main>
+        </div>
       </div>
 
-      <nav className="fixed inset-x-3 bottom-3 z-30 rounded-[28px] border border-border-default bg-bg-surface/95 p-2 shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur-2xl lg:hidden">
-        <div className="grid grid-cols-5 gap-1">
-          {mobileNav.map((item) => {
+      <nav className="mobile-bottom-nav fixed inset-x-0 bottom-0 z-30 border-t border-border-default bg-bg-surface md:hidden">
+        <div className="grid h-16 grid-cols-5 items-center px-2">
+          {primaryNav.map((item) => {
+            const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
             const Icon = item.icon;
-            const active = safePathname === item.href || (item.href !== '/app' && safePathname.startsWith(item.href));
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[11px] ${
-                  active ? 'bg-primary/15 text-primary' : 'text-text-secondary'
-                }`}
-              >
-                <Icon className="h-4 w-4" />
-                <span>{item.label.replace('AI Assistant', 'AI')}</span>
+              <Link key={item.href} href={item.href} className="flex flex-col items-center justify-center gap-1 py-2 text-[10px]">
+                <span className={`h-1.5 w-1.5 rounded-full ${active ? 'bg-primary' : 'bg-transparent'}`} />
+                <Icon className={`h-5 w-5 ${active ? 'text-primary' : 'text-text-secondary'}`} />
+                <span className={active ? 'text-primary' : 'text-text-secondary'}>{item.label}</span>
               </Link>
             );
           })}
+          <button type="button" onClick={() => setMoreOpen(true)} className="flex flex-col items-center justify-center gap-1 py-2 text-[10px] text-text-secondary">
+            <span className="h-1.5 w-1.5 rounded-full bg-transparent" />
+            <Menu className="h-5 w-5" />
+            <span>More</span>
+          </button>
         </div>
       </nav>
 
-      <AnimatePresence>
-        {searchOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[60] flex items-start justify-center bg-black/80 px-4 pt-20 backdrop-blur-xl"
-            onClick={() => setSearchOpen(false)}
+      {moreOpen ? (
+        <div className="fixed inset-0 z-40 md:hidden">
+          <button type="button" className="absolute inset-0 bg-black/30" onClick={() => setMoreOpen(false)} aria-label="Close more menu overlay" />
+          <div
+            className="absolute inset-x-0 bottom-0 rounded-t-[28px] border border-border-default bg-bg-surface p-4 shadow-md"
+            onTouchStart={(event) => {
+              sheetStartY.current = event.changedTouches[0]?.clientY ?? null;
+            }}
+            onTouchEnd={(event) => {
+              const startY = sheetStartY.current;
+              const endY = event.changedTouches[0]?.clientY ?? null;
+              if (startY !== null && endY !== null && endY - startY > 70) {
+                setMoreOpen(false);
+              }
+            }}
           >
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 16 }}
-              className="w-full max-w-3xl rounded-[32px] border border-border-default bg-bg-surface/95 p-4 shadow-[0_40px_120px_rgba(0,0,0,0.45)]"
-              onClick={(event) => event.stopPropagation()}
-            >
-              <div className="flex items-center gap-3 rounded-2xl border border-border-default bg-bg-elevated px-4 py-4">
-                <Search className="h-5 w-5 text-text-muted" />
-                <input
-                  autoFocus
-                  value={searchTerm}
-                  onChange={(event) => setSearchTerm(event.target.value)}
-                  placeholder="Search contracts, clauses, checklists, or conversations"
-                  className="w-full bg-transparent text-base text-text-primary outline-none placeholder:text-text-muted"
-                />
-                <Button variant="ghost" size="sm" onClick={() => setSearchOpen(false)}>
-                  Close
-                </Button>
-              </div>
-
-              <div className="mt-4 max-h-[60vh] overflow-auto pr-1">
-                {Object.entries(groupedResults).map(([group, items]) => (
-                  <div key={group} className="mb-5">
-                    <p className="mb-2 px-2 text-xs uppercase tracking-[0.24em] text-text-muted">{group}</p>
-                    <div className="space-y-2">
-                      {items.map((item) => (
-                        <Link
-                          key={`${item.type}-${item.title}`}
-                          href={item.href}
-                          className="block rounded-2xl border border-border-default bg-bg-elevated px-4 py-3 transition hover:border-border-glow hover:bg-bg-surface"
-                          onClick={() => setSearchOpen(false)}
-                        >
-                          <div className="flex items-center justify-between gap-4">
-                            <div>
-                              <p className="text-sm font-medium text-text-primary">{item.title}</p>
-                              <p className="text-sm text-text-secondary">{item.subtitle}</p>
-                            </div>
-                            <span className="rounded-full border border-border-default bg-bg-base px-3 py-1 text-xs text-text-muted">
-                              {item.type}
-                            </span>
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
-
-function NotificationGroup({
-  title,
-  items,
-}: {
-  title: string;
-  items: Array<{ id: string; title: string; detail: string; time: string }>;
-}) {
-  return (
-    <div className="mb-4 last:mb-0">
-      <p className="mb-2 text-xs uppercase tracking-[0.24em] text-text-muted">{title}</p>
-      <div className="space-y-2">
-        {items.map((item) => (
-          <div key={item.id} className="rounded-2xl border border-border-default bg-bg-elevated p-3">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-sm font-medium text-text-primary">{item.title}</p>
-                <p className="mt-1 text-sm text-text-secondary">{item.detail}</p>
-              </div>
-              <button className="text-xs text-text-muted">Dismiss</button>
+            <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-border-default" />
+            <div className="grid gap-2">
+              {secondaryNav.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Link key={item.href} href={item.href} className="flex min-h-[52px] items-center gap-3 rounded-2xl border border-border-default bg-bg-elevated px-4">
+                    <Icon className="h-5 w-5 text-text-secondary" />
+                    <span className="text-sm font-medium text-text-primary">{item.label}</span>
+                  </Link>
+                );
+              })}
             </div>
-            <p className="mt-2 text-xs text-text-muted">{item.time}</p>
           </div>
-        ))}
-      </div>
+        </div>
+      ) : null}
+
+      {searchOpen && searchValue ? (
+        <div className="fixed inset-x-4 top-20 z-20 rounded-3xl border border-border-default bg-bg-surface p-4 shadow-md md:inset-x-auto md:right-6 md:top-20 md:w-[480px]">
+          <div className="space-y-2">
+            {searchResults.slice(0, 6).map((item) => (
+              <Link key={`${item.type}-${item.title}`} href={item.href} onClick={() => setSearchOpen(false)} className="block rounded-2xl border border-border-default bg-bg-elevated p-3">
+                <p className="text-sm font-semibold text-text-primary">{item.title}</p>
+                <p className="mt-1 text-sm text-text-secondary">{item.subtitle}</p>
+              </Link>
+            ))}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

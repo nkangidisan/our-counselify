@@ -1,81 +1,61 @@
 import type { Config } from 'tailwindcss';
 
 const config: Config = {
-  content: ['./app/**/*.{js,ts,jsx,tsx}', './components/**/*.{js,ts,jsx,tsx}'],
+  darkMode: 'class',
+  content: ['./app/**/*.{js,ts,jsx,tsx}', './components/**/*.{js,ts,jsx,tsx}', './lib/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
       colors: {
         bg: {
-          base: '#0A0A0A',
-          surface: '#111111',
-          elevated: '#1A1A1A',
-          glass: 'rgba(255,255,255,0.04)',
+          base: 'var(--bg-base)',
+          surface: 'var(--bg-surface)',
+          elevated: 'var(--bg-elevated)',
+          hover: 'var(--bg-hover)',
         },
         border: {
-          default: 'rgba(255,255,255,0.08)',
-          glow: 'rgba(212,168,85,0.5)',
+          default: 'var(--border)',
+          gold: 'var(--border-gold)',
+          glow: 'var(--border-gold)',
         },
         primary: {
-          DEFAULT: '#D4A855',
-          hover: '#E8C06A',
-          glow: 'rgba(212,168,85,0.12)',
+          DEFAULT: 'var(--primary)',
+          hover: 'var(--primary-hover)',
+          glow: 'var(--primary-glow)',
         },
         accent: {
-          mint: '#16A34A',
-          amber: '#CA8A04',
-          coral: '#DC2626',
-          gold: '#D4A855',
+          green: 'var(--accent-green)',
+          amber: 'var(--accent-amber)',
+          red: 'var(--accent-red)',
+          mint: 'var(--accent-green)',
+          coral: 'var(--accent-red)',
+          gold: 'var(--primary)',
         },
         text: {
-          primary: '#F5F5F5',
-          secondary: '#A3A3A3',
-          muted: '#525252',
+          primary: 'var(--text-primary)',
+          secondary: 'var(--text-secondary)',
+          muted: 'var(--text-muted)',
         },
       },
       fontFamily: {
-        serif: ['Cormorant Garamond', 'serif'],
-        sans: ['Geist', 'sans-serif'],
-        mono: ['Geist Mono', 'monospace'],
-      },
-      animation: {
-        float: 'float 4s ease-in-out infinite',
-        glow: 'glow 3s ease-in-out infinite',
-        slideInUp: 'slideInUp 0.8s ease-out forwards',
-        fadeInScale: 'fadeInScale 0.6s ease-out forwards',
-        shimmer: 'shimmer 2s infinite',
-      },
-      keyframes: {
-        float: {
-          '0%, 100%': { transform: 'translateY(-6px)' },
-          '50%': { transform: 'translateY(6px)' },
-        },
-        glow: {
-          '0%, 100%': { opacity: '0.5' },
-          '50%': { opacity: '1' },
-        },
-        slideInUp: {
-          from: { opacity: '0', transform: 'translateY(30px)' },
-          to: { opacity: '1', transform: 'translateY(0)' },
-        },
-        fadeInScale: {
-          from: { opacity: '0', transform: 'scale(0.9)' },
-          to: { opacity: '1', transform: 'scale(1)' },
-        },
-        shimmer: {
-          '0%': { backgroundPosition: '-200% 0' },
-          '100%': { backgroundPosition: '200% 0' },
-        },
-      },
-      backdropBlur: {
-        glass: '20px',
+        serif: ['var(--font-cormorant)', 'serif'],
+        sans: ['var(--font-geist-sans)', 'sans-serif'],
+        mono: ['var(--font-geist-mono)', 'monospace'],
       },
       boxShadow: {
-        glass: '0 8px 32px rgba(0, 0, 0, 0.28)',
-        glow: '0 12px 40px rgba(212,168,85,0.15)',
+        sm: 'var(--shadow-sm)',
+        md: 'var(--shadow-md)',
+        gold: 'var(--shadow-gold)',
       },
-    }
+      fontSize: {
+        hero: 'clamp(36px, 6vw, 80px)',
+        section: 'clamp(28px, 4vw, 56px)',
+        card: 'clamp(18px, 2.5vw, 24px)',
+        body: 'clamp(14px, 1.5vw, 16px)',
+        caption: 'clamp(12px, 1.2vw, 14px)',
+      },
+    },
   },
-  plugins: []
+  plugins: [],
 };
 
 export default config;

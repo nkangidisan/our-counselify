@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 import { Instagram, Linkedin, Menu, MessageCircle, X } from 'lucide-react';
 import { Logo } from '@/components/brand/logo';
+import { useAuth } from '@/context/AuthProvider';
+import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { Button } from '@/components/ui/primitives';
 
 const publicNav = [
@@ -22,15 +23,15 @@ const footerGroups = [
       ['Features', '/features'],
       ['Industries', '/industries'],
       ['Pricing', '/pricing'],
-      ['Contact', '/contact'],
+      ['Resources', '/resources'],
     ],
   },
   {
     title: 'Company',
     links: [
       ['About', '/about'],
-      ['Blog', '/resources'],
-      ['Careers', '/contact'],
+      ['Docs', '/docs'],
+      ['Contact', '/contact'],
     ],
   },
   {
@@ -39,157 +40,190 @@ const footerGroups = [
       ['Terms', '/resources'],
       ['Privacy', '/resources'],
       ['Cookie Policy', '/resources'],
-      ['AI Disclaimer', '/resources'],
-      ['Compliance Disclosure', '/resources'],
+    ],
+  },
+  {
+    title: 'Connect',
+    links: [
+      ['WhatsApp', 'https://wa.me/447908509674'],
+      ['LinkedIn', 'https://www.linkedin.com/company/thecounselify/'],
+      ['Instagram', 'https://www.instagram.com/thecounselify'],
     ],
   },
 ] as const;
 
-export function PublicLayout({
-  children,
-  cta = true,
-}: {
-  children: React.ReactNode;
-  cta?: boolean;
-}) {
+export function PublicLayout({ children, cta = true }: { children: React.ReactNode; cta?: boolean }) {
   const [open, setOpen] = useState(false);
+  const { session, loading } = useAuth();
+
+  useEffect(() => {
+    document.body.style.overflow = open ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [open]);
 
   return (
     <div className="min-h-screen bg-bg-base text-text-primary">
-      <header className="sticky top-0 z-50 border-b border-border-default bg-[rgba(10,10,10,0.92)] backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+      <header className="sticky top-0 z-50 border-b border-border-default bg-bg-surface/95 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between gap-3 px-4 md:h-[72px] md:px-6 xl:px-8">
           <Logo />
 
-          <nav className="hidden items-center gap-8 lg:flex">
+          <nav className="hidden items-center gap-8 md:flex">
             {publicNav.map((item) => (
-              <Link key={item.href} href={item.href} className="text-sm text-text-secondary transition hover:text-text-primary">
+              <Link key={item.href} href={item.href} className="interactive-target inline-flex items-center text-sm text-text-secondary hover:text-text-primary">
                 {item.label}
               </Link>
             ))}
           </nav>
 
-          {cta && (
-            <div className="hidden items-center gap-3 md:flex">
-              <Link href="/auth?tab=signin">
-                <Button variant="ghost" size="sm">
-                  Sign In
-                </Button>
-              </Link>
-              <Link href="/auth?tab=signup">
-                <Button variant="primary" size="sm">
-                  Start Free Trial
-                </Button>
-              </Link>
-            </div>
-          )}
+          <div className="hidden items-center gap-3 md:flex">
+            <ThemeToggle />
+            {cta && !loading ? (
+              <>
+                {session ? (
+                  <Link href="/app">
+                    <Button variant="primary" size="sm">
+                      Go to Dashboard
+                    </Button>
+                  </Link>
+                ) : (
+                  <>
+                    <Link href="/auth?tab=signin">
+                      <Button variant="ghost" size="sm">
+                        Sign In
+                      </Button>
+                    </Link>
+                    <Link href="/auth?tab=signup">
+                      <Button variant="primary" size="sm">
+                        Start Free Trial
+                      </Button>
+                    </Link>
+                  </>
+                )}
+              </>
+            ) : null}
+          </div>
 
-          <button
-            className="inline-flex rounded-lg border border-border-default bg-bg-surface p-2 text-text-secondary md:hidden"
-            onClick={() => setOpen((current) => !current)}
-            aria-label="Toggle navigation"
-          >
-            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
+          <div className="flex items-center gap-2 md:hidden">
+            <ThemeToggle iconOnly />
+            <button
+              type="button"
+              onClick={() => setOpen(true)}
+              aria-label="Open navigation menu"
+              className="interactive-target inline-flex h-11 w-11 items-center justify-center rounded-full border border-border-default bg-bg-surface text-text-primary shadow-sm"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+          </div>
         </div>
+      </header>
 
-        {open && (
-          <div className="border-t border-border-default bg-bg-base md:hidden">
-            <div className="mx-auto flex max-w-[1280px] flex-col gap-2 px-4 py-4 sm:px-6">
+      {open ? (
+        <div className="fixed inset-0 z-[70] md:hidden">
+          <button type="button" className="absolute inset-0 bg-black/35" onClick={() => setOpen(false)} aria-label="Close navigation overlay" />
+          <div className="absolute right-0 top-0 flex h-full w-[95vw] max-w-[420px] flex-col bg-bg-surface px-5 pb-6 pt-5 shadow-md">
+            <div className="flex items-center justify-between">
+              <Logo compact />
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                aria-label="Close navigation menu"
+                className="interactive-target inline-flex h-11 w-11 items-center justify-center rounded-full border border-border-default bg-bg-elevated"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <nav className="mt-6 flex flex-1 flex-col">
               {publicNav.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="rounded-lg border border-transparent px-3 py-3 text-sm text-text-secondary transition hover:border-border-glow hover:bg-primary/10 hover:text-text-primary"
                   onClick={() => setOpen(false)}
+                  className="flex min-h-[56px] items-center border-b border-border-default text-base text-text-primary"
                 >
                   {item.label}
                 </Link>
               ))}
-              {cta && (
-                <div className="mt-2 grid gap-2">
-                  <Link href="/auth?tab=signin" onClick={() => setOpen(false)}>
-                    <Button variant="ghost" className="w-full">
-                      Sign In
-                    </Button>
+
+              <div className="mt-auto space-y-4 pt-6">
+                <div className="flex items-center justify-between rounded-3xl border border-border-default bg-bg-elevated px-4 py-3">
+                  <div>
+                    <p className="text-sm font-semibold text-text-primary">Theme</p>
+                    <p className="text-sm text-text-secondary">Switch between light and dark mode</p>
+                  </div>
+                  <ThemeToggle />
+                </div>
+                {cta && !loading ? (
+                  <div className="grid gap-3">
+                    {session ? (
+                      <Link href="/app" onClick={() => setOpen(false)}>
+                        <Button className="w-full" variant="primary">
+                          Go to Dashboard
+                        </Button>
+                      </Link>
+                    ) : (
+                      <>
+                        <Link href="/auth?tab=signin" onClick={() => setOpen(false)}>
+                          <Button className="w-full" variant="ghost">
+                            Sign In
+                          </Button>
+                        </Link>
+                        <Link href="/auth?tab=signup" onClick={() => setOpen(false)}>
+                          <Button className="w-full" variant="primary">
+                            Start Free Trial
+                          </Button>
+                        </Link>
+                      </>
+                    )}
+                  </div>
+                ) : null}
+                <div className="flex items-center justify-center gap-4 border-t border-border-default pt-4">
+                  <Link href="https://wa.me/447908509674" target="_blank" className="interactive-target inline-flex h-11 w-11 items-center justify-center rounded-full border border-border-default bg-bg-elevated">
+                    <MessageCircle className="h-4 w-4" />
                   </Link>
-                  <Link href="/auth?tab=signup" onClick={() => setOpen(false)}>
-                    <Button variant="primary" className="w-full">
-                      Start Free Trial
-                    </Button>
+                  <Link href="https://www.linkedin.com/company/thecounselify/" target="_blank" className="interactive-target inline-flex h-11 w-11 items-center justify-center rounded-full border border-border-default bg-bg-elevated">
+                    <Linkedin className="h-4 w-4" />
+                  </Link>
+                  <Link href="https://www.instagram.com/thecounselify" target="_blank" className="interactive-target inline-flex h-11 w-11 items-center justify-center rounded-full border border-border-default bg-bg-elevated">
+                    <Instagram className="h-4 w-4" />
                   </Link>
                 </div>
-              )}
-            </div>
+              </div>
+            </nav>
           </div>
-        )}
-      </header>
+        </div>
+      ) : null}
 
       <main className="page-enter">{children}</main>
 
-      <footer className="border-t border-border-default bg-bg-surface">
-        <div className="mx-auto grid max-w-[1280px] gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1.2fr,0.8fr,0.8fr,0.8fr] lg:px-8">
-          <div>
+      <footer className="mt-16 border-t border-border-default bg-bg-surface">
+        <div className="mx-auto grid max-w-[1280px] gap-8 px-4 py-12 md:grid-cols-2 md:px-6 xl:grid-cols-4 xl:px-8">
+          <div className="space-y-4">
             <Logo muted />
-            <p className="mt-4 max-w-sm text-sm text-text-secondary">
-              Continuous compliance monitoring, intelligent contract analysis, and regulatory forecasting for East African businesses.
+            <p className="max-w-sm text-sm text-text-secondary">
+              Continuous compliance monitoring, contract intelligence, and regulatory forecasting for East African businesses.
             </p>
-            <div className="mt-5 flex items-center gap-3">
-              <Link
-                href="https://wa.me/447908509674"
-                target="_blank"
-                className="inline-flex rounded-full border border-border-default p-2 text-text-secondary transition hover:border-border-glow hover:bg-primary/10 hover:text-primary"
-              >
-                <MessageCircle className="h-4 w-4" />
-              </Link>
-              <Link
-                href="https://www.linkedin.com/company/thecounselify/"
-                target="_blank"
-                className="inline-flex rounded-full border border-border-default p-2 text-text-secondary transition hover:border-border-glow hover:bg-primary/10 hover:text-primary"
-              >
-                <Linkedin className="h-4 w-4" />
-              </Link>
-              <Link
-                href="https://www.instagram.com/thecounselify"
-                target="_blank"
-                className="inline-flex rounded-full border border-border-default p-2 text-text-secondary transition hover:border-border-glow hover:bg-primary/10 hover:text-primary"
-              >
-                <Instagram className="h-4 w-4" />
-              </Link>
-            </div>
           </div>
 
           {footerGroups.map((group) => (
             <div key={group.title}>
-              <p className="text-sm uppercase tracking-[0.24em] text-text-muted">{group.title}</p>
+              <p className="text-xs uppercase tracking-[0.08em] text-text-muted">{group.title}</p>
               <div className="mt-4 space-y-3 text-sm text-text-secondary">
                 {group.links.map(([label, href]) => (
-                  <Link key={label} href={href} className="block transition hover:text-text-primary">
+                  <Link key={label} href={href} target={href.startsWith('http') ? '_blank' : undefined} className="block hover:text-text-primary">
                     {label}
                   </Link>
                 ))}
               </div>
             </div>
           ))}
-
-          <div>
-            <p className="text-sm uppercase tracking-[0.24em] text-text-muted">Connect</p>
-            <div className="mt-4 space-y-3 text-sm text-text-secondary">
-              <Link href="https://wa.me/447908509674" target="_blank" className="block transition hover:text-text-primary">
-                WhatsApp
-              </Link>
-              <Link href="https://www.linkedin.com/company/thecounselify/" target="_blank" className="block transition hover:text-text-primary">
-                LinkedIn
-              </Link>
-              <Link href="https://www.instagram.com/thecounselify" target="_blank" className="block transition hover:text-text-primary">
-                Instagram
-              </Link>
-            </div>
-          </div>
         </div>
 
         <div className="border-t border-border-default">
-          <div className="mx-auto flex max-w-[1280px] flex-col gap-3 px-4 py-5 text-sm text-text-muted sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-            <p>© 2025 The Counselify. All rights reserved.</p>
+          <div className="mx-auto flex max-w-[1280px] flex-col gap-2 px-4 py-5 text-sm text-text-muted md:flex-row md:items-center md:justify-between md:px-6 xl:px-8">
+            <p>© 2026 The Counselify. All rights reserved.</p>
             <p>AI outputs are assistive, not legal representation.</p>
           </div>
         </div>
@@ -201,18 +235,16 @@ export function PublicLayout({
 export function PublicHeroActions() {
   return (
     <div className="flex flex-col gap-3 sm:flex-row">
-      <Link href="/auth?tab=signup">
-        <Button variant="primary" size="lg">
-          Start Free Trial →
+      <Link href="/auth?tab=signup" className="w-full sm:w-auto">
+        <Button variant="primary" size="lg" className="w-full">
+          Start Free Trial
         </Button>
       </Link>
-      <motion.div whileHover={{ scale: 1.01 }}>
-        <Link href="/features">
-          <Button variant="ghost" size="lg">
-            Explore Features
-          </Button>
-        </Link>
-      </motion.div>
+      <Link href="/features" className="w-full sm:w-auto">
+        <Button variant="ghost" size="lg" className="w-full">
+          Explore Features
+        </Button>
+      </Link>
     </div>
   );
 }

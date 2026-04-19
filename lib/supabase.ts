@@ -40,7 +40,13 @@ export const authApi = {
 
     return client.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: getRedirectUrl('/app') },
+      options: {
+        redirectTo: getRedirectUrl('/auth/callback'),
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        },
+      },
     });
   },
 

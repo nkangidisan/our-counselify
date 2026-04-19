@@ -2,44 +2,37 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { authApi } from '@/lib/supabase';
-import { useAuthStore } from '@/lib/store';
+import { useAuth } from '@/context/AuthProvider';
 
 export function ProtectedAppGate({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const { isAuthenticated, loading, setAuth, setLoading } = useAuthStore();
+  const { session, loading } = useAuth();
 
   useEffect(() => {
-    let cancelled = false;
-
-    async function checkSession() {
-      setLoading(true);
-      const { data } = await authApi.getSession();
-      const session = data?.session ?? null;
-
-      if (cancelled) return;
-
-      if (!session?.user) {
-        setAuth(false, null);
-        router.replace('/auth?tab=signin');
-        return;
-      }
-
-      setAuth(true, session.user);
+    if (!loading && !session) {
+      router.replace('/auth?tab=signin');
     }
+  }, [loading, router, session]);
 
-    void checkSession();
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-bg-base px-4">
+        <div
+          className="h-8 w-8 animate-spin rounded-full border-2"
+          style={{
+            borderColor: 'var(--border)',
+            borderTopColor: 'var(--primary)',
+          }}
+        />
+      </div>
+    );
+  }
 
-    return () => {
-      cancelled = true;
-    };
-  }, [router, setAuth, setLoading]);
-
-  if (loading || !isAuthenticated) {
+  if (!session) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-bg-base px-4">
         <div className="rounded-lg border border-border-default bg-bg-surface px-5 py-4 text-sm text-text-secondary">
-          Checking your workspace access...
+          Redirecting to sign in...
         </div>
       </div>
     );
