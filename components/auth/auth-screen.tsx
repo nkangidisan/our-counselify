@@ -95,7 +95,7 @@ export function AuthScreen({ defaultMode = 'signin' }: { defaultMode?: Mode }) {
             );
           }
 
-          router.replace('/onboarding');
+          router.replace('/app');
         } else {
           setStatus({ type: 'success', message: 'Account created. Check your email to finish signing in.' });
         }

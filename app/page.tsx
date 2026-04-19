@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Bot, FileBadge2, FileText, Radar, Shield, TrendingUp } from 'lucide-react';
 import { PublicHeroActions, PublicLayout } from '@/components/layout/public-layout';
 import { Button, Card } from '@/components/ui/primitives';
-import { featureSections, industryCards, pillars, pricingTiers, productFeatures } from '@/lib/counselify-data';
+import { industryCards, pillars, pricingTiers, productFeatures } from '@/lib/counselify-data';
 
 const featureIcons = [FileText, Bot, Shield, Radar, FileBadge2, TrendingUp];
 
@@ -24,24 +24,13 @@ export default function HomePage() {
             <div className="mt-6">
               <PublicHeroActions />
             </div>
-
-            <div className="mt-6 -mx-4 overflow-x-auto px-4">
-              <div className="flex min-w-max gap-3">
-                {['Bank-grade encryption', '12 East African jurisdictions', 'AI-first legal workflows', 'Audit-ready evidence trails'].map((chip) => (
-                  <span key={chip} className="rounded-full border border-border-default bg-bg-surface px-4 py-2 text-sm text-text-secondary shadow-sm">
-                    {chip}
-                  </span>
-                ))}
-              </div>
-            </div>
           </div>
 
           <div className="mx-auto w-full max-w-[560px]">
             <Card className="border-border-gold">
               <div className="flex items-start justify-between gap-4 border-b border-border-default pb-5">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.08em] text-text-muted">Live product preview</p>
-                  <h2 className="mt-2 text-card font-semibold text-text-primary">Compliance overview</h2>
+                  <h2 className="text-card font-semibold text-text-primary">Compliance overview</h2>
                 </div>
                 <div className="flex h-20 w-20 items-center justify-center rounded-full border-[10px] border-primary/20 border-t-primary text-2xl font-semibold text-primary">
                   84
@@ -91,6 +80,25 @@ export default function HomePage() {
                 </div>
               </div>
             </Card>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-b border-border-default bg-bg-surface">
+        <div className="mx-auto max-w-[1280px] px-4 py-6 md:px-6 xl:px-8">
+          <div className="flex flex-col gap-4">
+            <span className="w-fit rounded-full border border-border-gold bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em] text-primary">
+              Live product preview
+            </span>
+            <div className="-mx-4 overflow-x-auto px-4">
+              <div className="flex min-w-max gap-3">
+                {['Bank-grade encryption', '12 East African jurisdictions', 'AI-first legal workflows', 'Audit-ready evidence trails'].map((chip) => (
+                  <span key={chip} className="rounded-full border border-border-default bg-bg-base px-4 py-2 text-sm text-text-secondary shadow-sm">
+                    {chip}
+                  </span>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -216,6 +224,18 @@ export default function HomePage() {
                 </div>
               </Card>
             ))}
+          </div>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <Link href="/pricing" className="w-full sm:w-auto">
+              <Button variant="primary" size="lg" className="w-full sm:w-auto">
+                View Full Pricing
+              </Button>
+            </Link>
+            <Link href="/auth?tab=signup" className="w-full sm:w-auto">
+              <Button variant="ghost" size="lg" className="w-full sm:w-auto">
+                Start Free Trial
+              </Button>
+            </Link>
           </div>
         </div>
       </section>

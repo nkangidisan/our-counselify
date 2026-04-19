@@ -7,23 +7,12 @@ type AuthNavigator = {
 export async function redirectAfterAuth(userId: string, navigate: AuthNavigator) {
   try {
     if (!supabase) {
-      navigate.replace('/onboarding');
-      return;
-    }
-
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('onboarding_completed')
-      .eq('id', userId)
-      .single();
-
-    if (error || !data || !data.onboarding_completed) {
-      navigate.replace('/onboarding');
+      navigate.replace('/app');
       return;
     }
 
     navigate.replace('/app');
   } catch {
-    navigate.replace('/onboarding');
+    navigate.replace('/app');
   }
 }
