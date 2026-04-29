@@ -20,6 +20,8 @@ export default function CompliancePage() {
     }))
   );
   const [openCategory, setOpenCategory] = useState<string | null>(null);
+  const [generating, setGenerating] = useState(false);
+  const [message, setMessage] = useState('');
 
   const grouped = useMemo(() => {
     return items.reduce<Record<string, typeof items>>((accumulator, item) => {
@@ -30,6 +32,19 @@ export default function CompliancePage() {
 
   const complete = items.filter((item) => item.status === 'Done').length;
   const score = Math.round((complete / items.length) * 100);
+
+  function generateChecklist() {
+    setGenerating(true);
+    setMessage('');
+    const refreshed = complianceItems.map((item) => ({
+      ...item,
+      status: item.status as ChecklistStatus,
+    }));
+    setItems(refreshed);
+    setOpenCategory(null);
+    setGenerating(false);
+    setMessage(`Checklist generated for ${jurisdiction} • ${industry}.`);
+  }
 
   return (
     <AppLayout>
@@ -59,9 +74,10 @@ export default function CompliancePage() {
                 </option>
               ))}
             </Select>
-            <Button variant="primary">Generate Checklist</Button>
+            <Button variant="primary" onClick={generateChecklist} loading={generating}>Generate Checklist</Button>
           </div>
         </div>
+        {message ? <p className="text-sm text-accent-green">{message}</p> : null}
 
         <Card>
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">

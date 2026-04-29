@@ -90,12 +90,17 @@ export function AuthScreen({ defaultMode = 'signin' }: { defaultMode?: Mode }) {
                 email: data.user.email ?? values.email,
                 full_name: values.fullName,
                 onboarding_completed: false,
+                last_login_at: data.session ? new Date().toISOString() : null,
               },
               { onConflict: 'id' }
             );
           }
 
-          router.replace('/app');
+          if (data.session) {
+            router.replace('/onboarding');
+          } else {
+            setStatus({ type: 'success', message: 'Account created. Check your email to finish signing in.' });
+          }
         } else {
           setStatus({ type: 'success', message: 'Account created. Check your email to finish signing in.' });
         }

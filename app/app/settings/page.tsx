@@ -5,16 +5,116 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Badge, Button, Input, Select } from '@/components/ui/primitives';
 import { AppLayout } from '@/components/layout/app-layout';
 import { eastAfricanCountries, industries, organizationMembers } from '@/lib/counselify-data';
+import { useAuth } from '@/context/AuthProvider';
+import { authApi, supabase } from '@/lib/supabase';
 
 const tabs = ['Profile', 'Organization', 'Members & Roles', 'Security', 'AI Preferences'] as const;
 
 export default function SettingsPage() {
   const [active, setActive] = useState<(typeof tabs)[number]>('Profile');
   const [inviteOpen, setInviteOpen] = useState(false);
+  const { session } = useAuth();
+  const [profileName, setProfileName] = useState('User A');
+  const [profileEmail, setProfileEmail] = useState('usera@counselify.africa');
+  const [profileCompany, setProfileCompany] = useState('LakeHub Growth Co.');
+  const [profileIndustry, setProfileIndustry] = useState('Technology');
+  const [profileCountry, setProfileCountry] = useState('Kenya');
+  const [website, setWebsite] = useState('https://lakehub.africa');
+  const [securityCurrentPassword, setSecurityCurrentPassword] = useState('');
+  const [securityNewPassword, setSecurityNewPassword] = useState('');
+  const [securityConfirmPassword, setSecurityConfirmPassword] = useState('');
+  const [status, setStatus] = useState<{ type: 'success' | 'error' | null; message: string }>({ type: null, message: '' });
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [savingOrganization, setSavingOrganization] = useState(false);
+  const [savingSecurity, setSavingSecurity] = useState(false);
+
+  async function saveProfile() {
+    setStatus({ type: null, message: '' });
+    if (!session?.user || !supabase) {
+      setStatus({ type: 'error', message: 'You need an active session to save profile updates.' });
+      return;
+    }
+    if (!profileName.trim()) {
+      setStatus({ type: 'error', message: 'Full name is required.' });
+      return;
+    }
+    setSavingProfile(true);
+    const { error } = await supabase.from('profiles').upsert(
+      {
+        id: session.user.id,
+        email: profileEmail.trim() || session.user.email || '',
+        full_name: profileName.trim(),
+        company_name: profileCompany.trim(),
+        industry: profileIndustry,
+        country: profileCountry,
+      },
+      { onConflict: 'id' }
+    );
+    setSavingProfile(false);
+    setStatus(error ? { type: 'error', message: 'Could not save profile changes.' } : { type: 'success', message: 'Profile saved successfully.' });
+  }
+
+  async function saveOrganization() {
+    setStatus({ type: null, message: '' });
+    if (!session?.user || !supabase) {
+      setStatus({ type: 'error', message: 'You need an active session to save organization updates.' });
+      return;
+    }
+    if (!profileCompany.trim()) {
+      setStatus({ type: 'error', message: 'Company name is required.' });
+      return;
+    }
+    setSavingOrganization(true);
+    const { error } = await supabase.from('profiles').upsert(
+      {
+        id: session.user.id,
+        email: profileEmail.trim() || session.user.email || '',
+        full_name: profileName.trim() || session.user.user_metadata?.full_name || null,
+        company_name: profileCompany.trim(),
+        industry: profileIndustry,
+        country: profileCountry,
+      },
+      { onConflict: 'id' }
+    );
+    setSavingOrganization(false);
+    setStatus(error ? { type: 'error', message: 'Could not save organization changes.' } : { type: 'success', message: 'Organization saved successfully.' });
+  }
+
+  async function updatePassword() {
+    setStatus({ type: null, message: '' });
+    if (!securityCurrentPassword || !securityNewPassword || !securityConfirmPassword) {
+      setStatus({ type: 'error', message: 'All password fields are required.' });
+      return;
+    }
+    if (securityNewPassword.length < 8) {
+      setStatus({ type: 'error', message: 'New password must be at least 8 characters.' });
+      return;
+    }
+    if (securityNewPassword !== securityConfirmPassword) {
+      setStatus({ type: 'error', message: 'New password and confirmation do not match.' });
+      return;
+    }
+    setSavingSecurity(true);
+    const { error } = await authApi.updatePassword(securityNewPassword);
+    setSavingSecurity(false);
+    if (error) {
+      setStatus({ type: 'error', message: error.message });
+      return;
+    }
+    setSecurityCurrentPassword('');
+    setSecurityNewPassword('');
+    setSecurityConfirmPassword('');
+    setStatus({ type: 'success', message: 'Password updated successfully.' });
+  }
 
   return (
     <AppLayout>
       <div className="space-y-6">
+        {status.type ? (
+          <div className={`rounded-2xl border px-4 py-3 text-sm ${status.type === 'success' ? 'border-accent-green/20 bg-[var(--accent-green-subtle)] text-accent-green' : 'border-accent-red/20 bg-[var(--accent-red-subtle)] text-accent-red'}`}>
+            {status.message}
+          </div>
+        ) : null}
         <div>
           <p className="text-sm uppercase tracking-[0.26em] text-accent-gold">Settings</p>
           <h1 className="mt-3 font-serif text-5xl text-white">Workspace and security settings</h1>
@@ -49,16 +149,16 @@ export default function SettingsPage() {
               <h2 className="text-2xl font-semibold text-white">Profile</h2>
               <div className="mt-5 grid gap-4 md:grid-cols-2">
                 <Field label="Full name">
-                  <Input defaultValue="User A" />
+                  <Input value={profileName} onChange={(event) => setProfileName(event.target.value)} />
                 </Field>
                 <Field label="Email">
-                  <Input defaultValue="usera@counselify.africa" />
+                  <Input value={profileEmail} onChange={(event) => setProfileEmail(event.target.value)} />
                 </Field>
                 <Field label="Company">
-                  <Input defaultValue="LakeHub Growth Co." />
+                  <Input value={profileCompany} onChange={(event) => setProfileCompany(event.target.value)} />
                 </Field>
                 <Field label="Industry">
-                  <Select defaultValue="Technology">
+                  <Select value={profileIndustry} onChange={(event) => setProfileIndustry(event.target.value)}>
                     {industries.map((item) => (
                       <option key={item.key} value={item.key}>
                         {item.key}
@@ -67,7 +167,7 @@ export default function SettingsPage() {
                   </Select>
                 </Field>
                 <Field label="Country">
-                  <Select defaultValue="Kenya">
+                  <Select value={profileCountry} onChange={(event) => setProfileCountry(event.target.value)}>
                     {eastAfricanCountries
                       .filter((country) => country.code !== 'EAC')
                       .map((country) => (
@@ -78,7 +178,7 @@ export default function SettingsPage() {
                   </Select>
                 </Field>
               </div>
-              <Button className="mt-6" variant="primary">
+              <Button className="mt-6" variant="primary" onClick={() => void saveProfile()} loading={savingProfile}>
                 Save Profile
               </Button>
             </div>
@@ -90,13 +190,13 @@ export default function SettingsPage() {
             <h2 className="text-2xl font-semibold text-white">Organization</h2>
             <div className="mt-5 grid gap-4 md:grid-cols-2">
               <Field label="Company name">
-                <Input defaultValue="LakeHub Growth Co." />
+                <Input value={profileCompany} onChange={(event) => setProfileCompany(event.target.value)} />
               </Field>
               <Field label="Website">
-                <Input defaultValue="https://lakehub.africa" />
+                <Input value={website} onChange={(event) => setWebsite(event.target.value)} />
               </Field>
               <Field label="Primary jurisdiction">
-                <Select defaultValue="Kenya">
+                <Select value={profileCountry} onChange={(event) => setProfileCountry(event.target.value)}>
                   {eastAfricanCountries.map((country) => (
                     <option key={country.code} value={country.name}>
                       {country.name}
@@ -105,7 +205,7 @@ export default function SettingsPage() {
                 </Select>
               </Field>
               <Field label="Industry">
-                <Select defaultValue="Technology">
+                <Select value={profileIndustry} onChange={(event) => setProfileIndustry(event.target.value)}>
                   {industries.map((item) => (
                     <option key={item.key} value={item.key}>
                       {item.key}
@@ -114,7 +214,7 @@ export default function SettingsPage() {
                 </Select>
               </Field>
             </div>
-            <Button className="mt-6" variant="primary">
+            <Button className="mt-6" variant="primary" onClick={() => void saveOrganization()} loading={savingOrganization}>
               Save Organization
             </Button>
           </div>
@@ -167,16 +267,16 @@ export default function SettingsPage() {
               <h2 className="text-2xl font-semibold text-white">Change password</h2>
               <div className="mt-5 space-y-4">
                 <Field label="Current password">
-                  <Input type="password" />
+                  <Input type="password" value={securityCurrentPassword} onChange={(event) => setSecurityCurrentPassword(event.target.value)} />
                 </Field>
                 <Field label="New password">
-                  <Input type="password" />
+                  <Input type="password" value={securityNewPassword} onChange={(event) => setSecurityNewPassword(event.target.value)} />
                 </Field>
                 <Field label="Confirm password">
-                  <Input type="password" />
+                  <Input type="password" value={securityConfirmPassword} onChange={(event) => setSecurityConfirmPassword(event.target.value)} />
                 </Field>
               </div>
-              <Button className="mt-6" variant="primary">
+              <Button className="mt-6" variant="primary" onClick={() => void updatePassword()} loading={savingSecurity}>
                 Update Password
               </Button>
             </div>

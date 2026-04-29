@@ -9,6 +9,8 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     industry TEXT,
     country TEXT,
     avatar_url TEXT,
+    onboarding_completed BOOLEAN NOT NULL DEFAULT FALSE,
+    last_login_at TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -145,6 +147,31 @@ CREATE TABLE IF NOT EXISTS public.audit_logs (
         details JSONB,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+-- Contact Inquiries
+CREATE TABLE IF NOT EXISTS public.contact_inquiries (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    full_name TEXT NOT NULL,
+    company_name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    country TEXT NOT NULL,
+    inquiry_type TEXT NOT NULL,
+    message TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+-- Contract Upload Jobs
+CREATE TABLE IF NOT EXISTS public.contract_uploads (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES auth.users ON DELETE SET NULL,
+    contract_name TEXT NOT NULL,
+    counterparty TEXT NOT NULL,
+    jurisdiction TEXT NOT NULL,
+    contract_type TEXT NOT NULL,
+    file_name TEXT NOT NULL,
+    file_size BIGINT NOT NULL,
+    mime_type TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'queued',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
 -- Indexes
 CREATE INDEX idx_contracts_org ON public.contracts(organization_id);
 CREATE INDEX idx_contracts_expiry ON public.contracts(expiry_date);
@@ -155,6 +182,8 @@ CREATE INDEX idx_regulatory_signals_jurisdiction ON public.regulatory_signals(ju
 CREATE INDEX idx_documents_org ON public.documents(organization_id);
 CREATE INDEX idx_assistant_messages_conversation ON public.assistant_messages(conversation_id);
 CREATE INDEX idx_audit_logs_org ON public.audit_logs(organization_id);
+CREATE INDEX idx_contact_inquiries_created_at ON public.contact_inquiries(created_at DESC);
+CREATE INDEX idx_contract_uploads_user_created ON public.contract_uploads(user_id, created_at DESC);
 -- Enable Row Level Security (RLS)
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.organizations ENABLE ROW LEVEL SECURITY;
@@ -168,6 +197,8 @@ ALTER TABLE public.documents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.assistant_conversations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.assistant_messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.contact_inquiries ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.contract_uploads ENABLE ROW LEVEL SECURITY;
 -- RLS Policies (Example - adjust as needed)
 CREATE POLICY "Users can view their own profile" ON public.profiles FOR
 SELECT USING (auth.uid() = id);
@@ -181,3 +212,7 @@ SELECT USING (
             WHERE user_id = auth.uid()
         )
     );
+CREATE POLICY "Anyone can submit contact inquiries" ON public.contact_inquiries FOR
+INSERT WITH CHECK (true);
+CREATE POLICY "Users can insert their own contract uploads" ON public.contract_uploads FOR
+INSERT WITH CHECK (auth.uid() = user_id);

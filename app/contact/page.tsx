@@ -21,6 +21,8 @@ const schema = z.object({
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -33,7 +35,24 @@ export default function ContactPage() {
     },
   });
 
-  const onSubmit = form.handleSubmit(() => {
+  const onSubmit = form.handleSubmit(async (values) => {
+    setSubmitting(true);
+    setSubmitError('');
+    setSubmitted(false);
+
+    const response = await fetch('/api/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(values),
+    });
+
+    setSubmitting(false);
+
+    if (!response.ok) {
+      setSubmitError('We could not submit your message right now. Please try again.');
+      return;
+    }
+
     setSubmitted(true);
     form.reset();
   });
@@ -126,7 +145,8 @@ export default function ContactPage() {
               <Field label="Message" error={form.formState.errors.message?.message}>
                 <TextArea {...form.register('message')} rows={6} />
               </Field>
-              <Button type="submit" variant="primary" className="w-full">
+              {submitError ? <p className="text-sm text-accent-coral">{submitError}</p> : null}
+              <Button type="submit" variant="primary" className="w-full" loading={submitting}>
                 Send Message
               </Button>
             </form>

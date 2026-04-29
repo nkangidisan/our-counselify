@@ -30,6 +30,40 @@ import {
 
 export default function ReportsPage() {
   const [exportOpen, setExportOpen] = useState(false);
+  const [exporting, setExporting] = useState(false);
+
+  function downloadCsv() {
+    const rows = [
+      ['month', 'low', 'medium', 'high', 'critical'],
+      ...reportRiskTrend.map((item) => [item.month, String(item.low), String(item.medium), String(item.high), String(item.critical)]),
+      [],
+      ['month', 'compliance_score'],
+      ...reportCompliance.map((item) => [item.month, String(item.score)]),
+      [],
+      ['month', 'deadlines_hit', 'deadlines_missed'],
+      ...reportDeadlines.map((item) => [item.month, String(item.hit), String(item.missed)]),
+      [],
+      ['jurisdiction', 'risk'],
+      ...reportJurisdictions.map((item) => [item.jurisdiction, String(item.risk)]),
+    ];
+
+    const csv = rows.map((row) => row.join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute('download', `counselify-report-${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
+  }
+
+  function handleExport() {
+    setExporting(true);
+    downloadCsv();
+    setExporting(false);
+    setExportOpen(false);
+  }
 
   return (
     <AppLayout>
@@ -178,7 +212,7 @@ export default function ReportsPage() {
                 <Button variant="ghost" onClick={() => setExportOpen(false)}>
                   Cancel
                 </Button>
-                <Button variant="primary">
+                <Button variant="primary" onClick={handleExport} loading={exporting}>
                   <Download className="h-4 w-4" />
                   Confirm Export
                 </Button>

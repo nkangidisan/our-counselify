@@ -40,10 +40,12 @@ export default function ContractsPage() {
               Search, filter, and review every agreement across your East African operations.
             </p>
           </div>
-          <Button variant="primary">
-            <Upload className="h-4 w-4" />
-            Upload Contract
-          </Button>
+          <Link href="/contracts/upload">
+            <Button variant="primary">
+              <Upload className="h-4 w-4" />
+              Upload Contract
+            </Button>
+          </Link>
         </div>
 
         <Card>

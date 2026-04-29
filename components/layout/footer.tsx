@@ -24,16 +24,16 @@ export function Footer() {
             <div className="space-y-2 text-sm">
               <Link href="/about" className="block text-slate-400 hover:text-white transition-colors">About</Link>
               <Link href="/contact" className="block text-slate-400 hover:text-white transition-colors">Contact</Link>
-              <Link href="/careers" className="block text-slate-400 hover:text-white transition-colors">Careers</Link>
+              <Link href="/resources" className="block text-slate-400 hover:text-white transition-colors">Careers</Link>
             </div>
           </div>
           {/* Legal */}
           <div className="space-y-4">
             <h3 className="text-white font-semibold">Legal</h3>
             <div className="space-y-2 text-sm">
-              <Link href="/terms" className="block text-slate-400 hover:text-white transition-colors">Terms of Service</Link>
-              <Link href="/privacy" className="block text-slate-400 hover:text-white transition-colors">Privacy Policy</Link>
-              <Link href="/cookies" className="block text-slate-400 hover:text-white transition-colors">Cookie Policy</Link>
+              <Link href="/resources" className="block text-slate-400 hover:text-white transition-colors">Terms of Service</Link>
+              <Link href="/resources" className="block text-slate-400 hover:text-white transition-colors">Privacy Policy</Link>
+              <Link href="/resources" className="block text-slate-400 hover:text-white transition-colors">Cookie Policy</Link>
             </div>
           </div>
           {/* Compliance & Security */}

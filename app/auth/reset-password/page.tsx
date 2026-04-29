@@ -17,6 +17,7 @@ const schema = z.object({
 export default function ResetPasswordPage() {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: { email: '' },
@@ -24,7 +25,9 @@ export default function ResetPasswordPage() {
 
   const onSubmit = form.handleSubmit(async ({ email }) => {
     setError('');
+    setSubmitting(true);
     const { error: resetError } = await authApi.resetPassword(email);
+    setSubmitting(false);
     if (resetError) {
       setError(resetError.message);
       return;
@@ -65,7 +68,7 @@ export default function ResetPasswordPage() {
                 )}
               </label>
               {error && <p className="text-sm text-accent-coral">{error}</p>}
-              <Button className="w-full" variant="primary">
+              <Button className="w-full" variant="primary" loading={submitting}>
                 Send reset link
               </Button>
             </form>

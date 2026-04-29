@@ -8,6 +8,8 @@ export interface Profile {
   industry: string;
   country: string;
   avatar_url?: string;
+  onboarding_completed?: boolean;
+  last_login_at?: string | null;
   created_at: string;
   updated_at: string;
 }
